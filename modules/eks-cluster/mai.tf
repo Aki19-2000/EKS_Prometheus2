@@ -38,14 +38,14 @@ resource "aws_security_group" "eks_cluster_sg" {
 
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
-  role_arn = var.eks_cluster_role_arn
+  role_arn = var.cluster_role_arn
 
   vpc_config {
-    subnet_ids         = var.subnet_ids
+    subnet_ids         = var.subnets
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
-  version = "1.25" # Updated to Kubernetes version 1.25
+  version = var.cluster_version
 
   tags = {
     Name = var.cluster_name
@@ -55,18 +55,14 @@ resource "aws_eks_cluster" "eks" {
 resource "aws_eks_node_group" "eks_nodes" {
   cluster_name   = aws_eks_cluster.eks.name
   node_role_arn  = var.node_role_arn
-  subnet_ids     = var.subnet_ids
-  instance_types = ["t3.medium"]
+  subnet_ids     = var.subnets
+  instance_types = [var.instance_type]
 
   scaling_config {
-    desired_size = 3
-    min_size     = 1
-    max_size     = 4
+    desired_size = var.desired_capacity
+    min_size     = var.min_capacity
+    max_size     = var.max_capacity
   }
-
-  # Remove AMI version if not needed
-  # ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
-  # release_version = "ami-0d36889d628f44a78" # Replace with the actual AMI ID for Kubernetes version 1.25
 
   tags = {
     Name = "${var.cluster_name}-worker-nodes"
@@ -94,7 +90,7 @@ resource "kubernetes_deployment" "AppointmentDeployment" {
       spec {
         container {
           name  = "appointment-container"
-          image = var.image_url
+          image = var.appointment_image
 
           port {
             container_port = 3001
@@ -145,7 +141,7 @@ resource "kubernetes_deployment" "PatientDeployment" {
       spec {
         container {
           name  = "patient-container"
-          image = var.image_url_patient
+          image = var.patient_image
 
           port {
             container_port = 3000
