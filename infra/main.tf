@@ -16,7 +16,7 @@ module "ecr" {
 }
 
 module "eks-cluster" {
-  source                 = "./modules/eks-cluster"
+  source                 = "../modules/eks-cluster"
   cluster_name           = var.cluster_name
   cluster_version        = var.cluster_version
   subnets                = module.vpc.private_subnets
