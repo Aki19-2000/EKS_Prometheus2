@@ -38,7 +38,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
- arn
+  role_arn = var.cluster_role_arn
 
   vpc_config {
     subnet_ids         = var.subnets
