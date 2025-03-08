@@ -59,10 +59,5 @@ variable "grafana_admin_password" {
 variable "region" {
   description = "The AWS region to deploy the resources"
   type        = string
-  defualt     = "us-west-2"
-}
-
-variable "vpc_id" {
-  description = "The VPC ID where the EKS cluster will be deployed"
-  type        = string
+  default     = "us-west-2"
 }
