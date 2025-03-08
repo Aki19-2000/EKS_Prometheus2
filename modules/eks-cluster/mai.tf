@@ -27,7 +27,7 @@ resource "aws_eks_cluster" "eks_cluster" {
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
-  version = var.cluster_version
+  version = "1.25" # Updated to Kubernetes version 1.25
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
