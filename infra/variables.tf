@@ -43,14 +43,6 @@ variable "vpc_id" {
   description = "The VPC ID for the EKS cluster"
 }
 
-variable "cluster_role_arn" {
-  description = "The ARN of the IAM role for the EKS cluster"
-}
-
-variable "node_role_arn" {
-  description = "The ARN of the IAM role for the EKS nodes"
-}
-
 variable "desired_capacity" {
   description = "The desired number of worker nodes"
   default     = 2
