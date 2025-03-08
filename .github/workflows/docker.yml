@@ -1,0 +1,66 @@
+name: Build and Push Docker Images to ECR
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    # Set up Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    # Configure AWS credentials using OIDC
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        role-to-assume: arn:aws:iam::302263075199:role/OIDC-Terraform
+        aws-region: us-west-2
+
+    # Log in to Amazon ECR
+    - name: Log in to Amazon ECR
+      run: |
+        aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 302263075199.dkr.ecr.us-west-2.amazonaws.com
+
+    # Create ECR repository for Patient Service if it doesn't exist
+    - name: Create ECR repository for Patient Service
+      run: |
+        aws ecr describe-repositories --repository-names patient-service --region us-west-2 || \
+        aws ecr create-repository --repository-name patient-service --region us-west-2
+
+    # Create ECR repository for Appointment Service if it doesn't exist
+    - name: Create ECR repository for Appointment Service
+      run: |
+        aws ecr describe-repositories --repository-names appointment-service --region us-west-2 || \
+        aws ecr create-repository --repository-name appointment-service --region us-west-2
+
+    # Build, tag, and push Docker image for Patient Service
+    - name: Build, Tag & Push Docker Image for Patient Service
+      run: |
+        cd App/Patient/
+        docker build -t patient-service:latest -f Dockerfile .
+        docker tag patient-service:latest 302263075199.dkr.ecr.us-west-2.amazonaws.com/patient-service:latest
+        docker push 302263075199.dkr.ecr.us-west-2.amazonaws.com/patient-service:latest
+
+    # Build, tag, and push Docker image for Appointment Service
+    - name: Build, Tag & Push Docker Image for Appointment Service
+      run: |
+        cd App/Appointmnet/
+        docker build -t appointment-service:latest -f Dockerfile .
+        docker tag appointment-service:latest 302263075199.dkr.ecr.us-west-2.amazonaws.com/appointment-service:latest
+        docker push 302263075199.dkr.ecr.us-west-2.amazonaws.com/appointment-service:latest
+
+    # Optionally, remove local Docker images after pushing
+    - name: Cleanup local Docker images
+      run: |
+        docker rmi 302263075199.dkr.ecr.us-west-2.amazonaws.com/patient-service:latest
+        docker rmi 302263075199.dkr.ecr.us-west-2.amazonaws.com/appointment-service:latest
