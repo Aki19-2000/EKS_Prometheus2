@@ -37,12 +37,12 @@ jobs:
           aws-region: us-west-2
 
       - name: List Directory Contents
-        run: ls -la ./Infra
+        run: ls -la ./infra
 
       - name: Terraform Init
         run: terraform init
-        working-directory: ./Infra
+        working-directory: ./infra
 
       - name: Terraform Apply
         run: terraform apply -var-file=terraform.tfvars -auto-approve
-        working-directory: ./Infra
+        working-directory: ./infra
