@@ -1,13 +1,3 @@
-variable "vpc_id" {}
-variable "cluster_name" {}
-variable "eks_cluster_role_arn" {}
-variable "subnet_ids" {
-  type = list(string)
-}
-variable "node_role_arn" {}
-variable "image_url" {}
-variable "image_url_patient" {}
-
 resource "aws_security_group" "eks_cluster_sg" {
   name        = "eks-cluster-sg"
   description = "Security group for EKS cluster"
@@ -35,7 +25,7 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 
   ingress {
-   _port   = 3001
+    from_port   = 3001
     to_port     = 3001
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
@@ -185,12 +175,4 @@ resource "kubernetes_service" "PatientService" {
   }
 
   depends_on = [kubernetes_deployment.PatientDeployment]
-}
-
-output "cluster_id" {
-  value = aws_eks_cluster.eks.id
-}
-
-output "cluster_endpoint" {
-  value = aws_eks_cluster.eks.endpoint
 }
