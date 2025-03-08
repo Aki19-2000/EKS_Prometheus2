@@ -11,10 +11,6 @@ module "iam" {
   source = "../modules/iam"
 }
 
-#module "ecr" {
- # source = "../modules/ecr"
-#}
-
 module "eks-cluster" {
   source                 = "../modules/eks-cluster"
   cluster_name           = var.cluster_name
