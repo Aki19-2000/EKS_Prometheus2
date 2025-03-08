@@ -23,7 +23,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   role_arn = var.cluster_role_arn
 
   vpc_config {
-    subnet_ids = var.subnets
+    subnet_ids         = var.subnets
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
@@ -33,7 +33,7 @@ resource "aws_eks_cluster" "eks_cluster" {
 }
 
 resource "aws_eks_node_group" "eks_node_group" {
- eks_cluster.eks_cluster.name
+  cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "${var.cluster_name}-node-group"
   node_role_arn   = var.node_role_arn
   subnet_ids      = var.subnets
@@ -44,7 +44,7 @@ resource "aws_eks_node_group" "eks_node_group" {
     min_size     = var.min_capacity
   }
 
-  ami_type = "AL2_x86_64" # Use the appropriate AMI type for your instance type
+  ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
   release_version = "ami-0d36889d628f44a78" # Replace with the actual release version
 
   instance_types = [var.instance_type]
