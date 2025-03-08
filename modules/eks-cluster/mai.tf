@@ -9,8 +9,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   version = var.cluster_version
 
   enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
-
- }
+}
 
 resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
@@ -31,24 +30,27 @@ resource "aws_eks_node_group" "eks_node_group" {
   ]
 }
 
-resource "aws_security_group" "eks_cluster_sg" {
-  name        = "${var.cluster_name}-eks-cluster-sg"
-  description = "EKS cluster security group"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+resource "null_resource" "update_kubeconfig" {
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.eks_cluster.name}"
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+  depends_on = [
+    aws_eks_cluster.eks_cluster,
+  ]
+}
+
+resource "null_resource" "verify_kubernetes" {
+  provisioner "local-exec" {
+    command = "kubectl get nodes"
+    environment = {
+      KUBECONFIG = "${path.module}/kubeconfig"
+    }
   }
+
+  depends_on = [
+    null_resource.update_kubeconfig,
+  ]
 }
 
 resource "kubernetes_deployment" "patient_service" {
@@ -87,6 +89,10 @@ resource "kubernetes_deployment" "patient_service" {
       }
     }
   }
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
 
 resource "kubernetes_deployment" "appointment_service" {
@@ -125,6 +131,10 @@ resource "kubernetes_deployment" "appointment_service" {
       }
     }
   }
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
 
 resource "kubernetes_service" "patient_service" {
@@ -145,6 +155,10 @@ resource "kubernetes_service" "patient_service" {
 
     type = "LoadBalancer"
   }
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
 
 resource "kubernetes_service" "appointment_service" {
@@ -165,6 +179,10 @@ resource "kubernetes_service" "appointment_service" {
 
     type = "LoadBalancer"
   }
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
 
 resource "helm_release" "prometheus" {
@@ -174,6 +192,10 @@ resource "helm_release" "prometheus" {
   namespace  = "monitoring"
 
   create_namespace = true
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
 
 resource "helm_release" "grafana" {
@@ -188,4 +210,8 @@ resource "helm_release" "grafana" {
     name  = "adminPassword"
     value = var.grafana_admin_password
   }
+
+  depends_on = [
+    null_resource.verify_kubernetes,
+  ]
 }
