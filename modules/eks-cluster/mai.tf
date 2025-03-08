@@ -65,7 +65,7 @@ resource "aws_eks_node_group" "eks_nodes" {
   }
 
   ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
-  release_version = "ami-0d36889d628f44a78" # Replace with the actual AMI ID for Kubernetes version 1.25
+  release_version = "ami-0a0b0c0d0e0f0g0h0" # Replace with the actual AMI ID for Kubernetes version 1.25
 
   tags = {
     Name = "${var.cluster_name}-worker-nodes"
