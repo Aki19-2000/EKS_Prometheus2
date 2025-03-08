@@ -3,14 +3,6 @@ variable "region" {
   default     = "us-west-2"
 }
 
-variable "s3_bucket" {
-  description = "The S3 bucket for Terraform state"
-}
-
-variable "dynamodb_table" {
-  description = "The DynamoDB table for state locking"
-}
-
 variable "vpc_name" {
   description = "The name of the VPC"
   default     = "eks-vpc"
