@@ -4,111 +4,148 @@ resource "aws_security_group" "eks_cluster_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 3000
+    to_port     = 3000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 3001
+    to_port     = 3001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "eks-cluster-sg"
   }
 }
 
-resource "aws_eks_cluster" "eks_cluster" {
+resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
-  role_arn = var.cluster_role_arn
+  role_arn = var.eks_cluster_role_arn
 
   vpc_config {
-    subnet_ids         = var.subnets
+    subnet_ids         = var.subnet_ids
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
   version = "1.25" # Updated to Kubernetes version 1.25
 
-  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  tags = {
+    Name = var.cluster_name
+  }
 }
 
-resource "aws_eks_node_group" "eks_node_group" {
-  cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = "${var.cluster_name}-node-group"
-  node_role_arn   = var.node_role_arn
-  subnet_ids      = var.subnets
+resource "aws_eks_node_group" "eks_nodes" {
+  cluster_name   = aws_eks_cluster.eks.name
+  node_role_arn  = var.node_role_arn
+  subnet_ids     = var.subnet_ids
+  instance_types = ["t3.medium"]
 
   scaling_config {
-    desired_size = var.desired_capacity
-    max_size     = var.max_capacity
-    min_size     = var.min_capacity
+    desired_size = 3
+    min_size     = 1
+    max_size     = 4
   }
 
-  ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
-  release_version = "ami-0d36889d628f44a78" # Replace with the actual release version
+  # Remove AMI version if not needed
+  # ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
+  # release_version = "ami-0d36889d628f44a78" # Replace with the actual AMI ID for Kubernetes version 1.25
 
-  instance_types = [var.instance_type]
-
-  depends_on = [
-    aws_eks_cluster.eks_cluster,
-  ]
-}
-
-resource "null_resource" "update_kubeconfig" {
-  provisioner "local-exec" {
-    command = <<EOT
-aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.eks_cluster.name}
-EOT
+  tags = {
+    Name = "${var.cluster_name}-worker-nodes"
   }
 
-  depends_on = [
-    aws_eks_cluster.eks_cluster,
-  ]
+  depends_on = [aws_eks_cluster.eks]
 }
 
-resource "null_resource" "verify_kubernetes" {
-  provisioner "local-exec" {
-    command = <<EOT
-kubectl get nodes
-EOT
-    environment = {
-      KUBECONFIG = "${path.module}/kubeconfig"
-    }
-  }
-
-  depends_on = [
-    null_resource.update_kubeconfig,
-  ]
-}
-
-resource "kubernetes_deployment" "patient_service" {
+resource "kubernetes_deployment" "AppointmentDeployment" {
   metadata {
-    name = "patient-service"
-    labels = {
-      app = "patient-service"
-    }
+    name      = "appointment-deployment"
+    namespace = "default"
   }
 
   spec {
-    replicas = 2
+    replicas = 1
 
     selector {
-      match_labels = {
-        app = "patient-service"
-      }
+      match_labels = { app = "appointment" }
     }
 
     template {
-      metadata {
-        labels = {
-          app = "patient-service"
-        }
-      }
+      metadata { labels = { app = "appointment" } }
 
       spec {
         container {
-          image = var.patient_image
-          name  = "patient-service"
+          name  = "appointment-container"
+          image = var.image_url
+
+          port {
+            container_port = 3001
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "AppointmentService" {
+  metadata {
+    name      = "appointment-service"
+    namespace = "default"
+  }
+
+  spec {
+    selector = { app = "appointment" }
+
+    port {
+      protocol   = "TCP"
+      port       = 3001
+      target_port = 3001
+    }
+
+    type = "LoadBalancer"
+  }
+
+  depends_on = [kubernetes_deployment.AppointmentDeployment]
+}
+
+resource "kubernetes_deployment" "PatientDeployment" {
+  metadata {
+    name      = "patient-deployment"
+    namespace = "default"
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = { app = "patient" }
+    }
+
+    template {
+      metadata { labels = { app = "patient" } }
+
+      spec {
+        container {
+          name  = "patient-container"
+          image = var.image_url_patient
 
           port {
             container_port = 3000
@@ -117,129 +154,25 @@ resource "kubernetes_deployment" "patient_service" {
       }
     }
   }
-
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
 }
 
-resource "kubernetes_deployment" "appointment_service" {
+resource "kubernetes_service" "PatientService" {
   metadata {
-    name = "appointment-service"
-    labels = {
-      app = "appointment-service"
-    }
+    name      = "patient-service"
+    namespace = "default"
   }
 
   spec {
-    replicas = 2
-
-    selector {
-      match_labels = {
-        app = "appointment-service"
-      }
-    }
-
-    template {
-      metadata {
-        labels = {
-          app = "appointment-service"
-        }
-      }
-
-      spec {
-        container {
-          image = var.appointment_image
-          name  = "appointment-service"
-
-          port {
-            container_port = 3000
-          }
-        }
-      }
-    }
-  }
-
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
-}
-
-resource "kubernetes_service" "patient_service" {
-  metadata {
-    name = "patient-service"
-  }
-
-  spec {
-    selector = {
-      app = "patient-service"
-    }
+    selector = { app = "patient" }
 
     port {
-      protocol = "TCP"
-      port     = 80
+      protocol   = "TCP"
+      port       = 3000
       target_port = 3000
     }
 
     type = "LoadBalancer"
   }
 
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
-}
-
-resource "kubernetes_service" "appointment_service" {
-  metadata {
-    name = "appointment-service"
-  }
-
-  spec {
-    selector = {
-      app = "appointment-service"
-    }
-
-    port {
-      protocol = "TCP"
-      port     = 80
-      target_port = 3000
-    }
-
-    type = "LoadBalancer"
-  }
-
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
-}
-
-resource "helm_release" "prometheus" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = "monitoring"
-
-  create_namespace = true
-
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
-}
-
-resource "helm_release" "grafana" {
-  name       = "grafana"
-  repository = "https://grafana.github.io/helm-charts"
-  chart      = "grafana"
-  namespace  = "monitoring"
-
-  create_namespace = true
-
-  set {
-    name  = "adminPassword"
-    value = var.grafana_admin_password
-  }
-
-  depends_on = [
-    null_resource.verify_kubernetes,
-  ]
+  depends_on = [kubernetes_deployment.PatientDeployment]
 }
