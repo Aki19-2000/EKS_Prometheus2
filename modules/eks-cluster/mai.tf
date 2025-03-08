@@ -36,9 +36,9 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 }
 
-eks_cluster" "eks" {
+resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
-  role_arn = var.cluster_role_arn
+ arn
 
   vpc_config {
     subnet_ids         = var.subnets
@@ -58,7 +58,8 @@ resource "aws_eks_node_group" "eks_nodes" {
   subnet_ids     = var.subnets
   instance_types = [var.instance_type]
 
- _size = var.desired_capacity
+  scaling_config {
+    desired_size = var.desired_capacity
     min_size     = var.min_capacity
     max_size     = var.max_capacity
   }
