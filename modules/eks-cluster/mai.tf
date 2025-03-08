@@ -82,7 +82,7 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 }
 
-eks" {
+resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
 
@@ -102,7 +102,7 @@ resource "aws_eks_node_group" "eks_nodes" {
   cluster_name   = aws_eks_cluster.eks.name
   node_role_arn  = var.node_role_arn
   subnet_ids     = var.private_subnets
-  instance_types = [var.instance_type]
+  [var.instance_type]
 
   scaling_config {
     desired_size = var.desired_capacity
