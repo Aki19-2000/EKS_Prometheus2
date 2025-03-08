@@ -34,9 +34,6 @@ variable "cluster_version" {
   description = "The version of the EKS cluster"
 }
 
-variable "vpc_id" {
-  description = "The VPC ID for the EKS cluster"
-}
 
 variable "desired_capacity" {
   description = "The desired number of worker nodes"
