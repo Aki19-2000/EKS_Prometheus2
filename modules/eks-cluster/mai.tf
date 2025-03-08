@@ -5,7 +5,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
   ingress {
     from_port   = 0
-    to_port     = 0
+    to_port     0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -28,12 +28,12 @@ resource "aws_eks_cluster" "eks_cluster" {
 
   version = var.cluster_version
 
-  enabled_cluster_log_types = ["api", "audit", authenticator", "controllerManager", "scheduler"]
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 }
 
 resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
-  = "${var.cluster_name}-node-group"
+  node_group_name = "${var.cluster_name}-node-group"
   node_role_arn   = var.node_role_arn
   subnet_ids      = var.subnets
 
@@ -64,7 +64,9 @@ EOT
 
 resource "null_resource" "verify_kubernetes" {
   provisioner "local-exec" {
-    command = "kubectl get nodes"
+    command = <<EOT
+kubectl get nodes
+EOT
     environment = {
       KUBECONFIG = "${path.module}/kubeconfig"
     }
