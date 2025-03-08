@@ -28,12 +28,12 @@ resource "aws_eks_cluster" "eks_cluster" {
 
   version = var.cluster_version
 
-  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
+  enabled_cluster_log_types = ["api", "audit", authenticator", "controllerManager", "scheduler"]
 }
 
 resource "aws_eks_node_group" "eks_node_group" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
-  node_group_name = "${var.cluster_name}-node-group"
+  = "${var.cluster_name}-node-group"
   node_role_arn   = var.node_role_arn
   subnet_ids      = var.subnets
 
@@ -50,9 +50,11 @@ resource "aws_eks_node_group" "eks_node_group" {
   ]
 }
 
-config" {
+resource "null_resource" "update_kubeconfig" {
   provisioner "local-exec" {
-    command = "aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.eks_cluster.name}"
+    command = <<EOT
+aws eks update-kubeconfig --region ${var.region} --name ${aws_eks_cluster.eks_cluster.name}
+EOT
   }
 
   depends_on = [
