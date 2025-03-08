@@ -1,8 +1,3 @@
-variable "region" {
-  description = "The AWS region to deploy to"
-  default     = "us-west-2"
-}
-
 variable "vpc_name" {
   description = "The name of the VPC"
   default     = "eks-vpc"
@@ -33,12 +28,27 @@ variable "private_subnets" {
 
 variable "cluster_name" {
   description = "The name of the EKS cluster"
-  default     = "my-eks-cluster"
 }
 
 variable "cluster_version" {
   description = "The version of the EKS cluster"
-  default     = "1.21"
+}
+
+variable "subnets" {
+  description = "The subnets for the EKS cluster"
+  type        = list(string)
+}
+
+variable "vpc_id" {
+  description = "The VPC ID for the EKS cluster"
+}
+
+variable "cluster_role_arn" {
+  description = "The ARN of the IAM role for the EKS cluster"
+}
+
+variable "node_role_arn" {
+  description = "The ARN of the IAM role for the EKS nodes"
 }
 
 variable "desired_capacity" {
@@ -61,15 +71,21 @@ variable "instance_type" {
   default     = "t3.medium"
 }
 
+variable "patient_image" {
+  description = "The Docker image for the Patient Service"
+}
+
+variable "appointment_image" {
+  description = "The Docker image for the Appointment Service"
+}
+
 variable "grafana_admin_password" {
   description = "The admin password for Grafana"
   default     = "your-grafana-admin-password"
 }
 
-variable "patient_image" {
-  description = "The URI of the patient service image"
-}
-
-variable "appointment_image" {
-  description = "The URI of the appointment service image"
+variable "region" {
+  description = "The AWS region to deploy the resources"
+  type        = string
+  default     = "us-west-2"
 }
