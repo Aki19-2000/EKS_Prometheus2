@@ -45,7 +45,7 @@ resource "aws_eks_cluster" "eks" {
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
-  version = var.cluster_version
+  version = "1.25" # Ensure this is a supported version
 
   tags = {
     Name = var.cluster_name
