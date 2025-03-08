@@ -11,5 +11,5 @@ max_capacity          = 3
 min_capacity          = 1
 instance_type         = "t3.medium"
 grafana_admin_password = "GrafanaAdmin123!"
-patient_image         = "your-patient-service-image-uri"
-appointment_image     = "your-appointment-service-image-uri"
+patient_image         = "302263075199.dkr.ecr.us-west-2.amazonaws.com/patient-service:latest"
+appointment_image     = "302263075199.dkr.ecr.us-west-2.amazonaws.com/appointment-service:latest"
