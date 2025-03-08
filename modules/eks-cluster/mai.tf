@@ -93,7 +93,8 @@ resource "aws_eks_cluster" "eks" {
 
   version = var.cluster_version
 
-  = var.cluster_name
+  tags = {
+    Name = var.cluster_name
   }
 }
 
