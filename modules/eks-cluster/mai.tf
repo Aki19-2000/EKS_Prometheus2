@@ -1,12 +1,11 @@
 provider "aws" {
-  region = "us-west-2"
+  region = var.region
 }
 
 provider "kubernetes" {
   host                   = aws_eks_cluster.eks.endpoint
   token                  = data.aws_eks_cluster_auth.eks.token
   cluster_ca_certificate = base64decode(aws_eks_cluster.eks.certificate_authority[0].data)
-  load_config_file       = false
 }
 
 provider "helm" {
@@ -30,7 +29,7 @@ resource "kubernetes_config_map" "aws_auth" {
   data = {
     mapRoles = jsonencode([
       {
-        rolearn  = aws_iam_role.node_role.arn
+        rolearn  = var.node_role_arn
         username = "system:node:{{EC2PrivateDNSName}}"
         groups   = ["system:bootstrappers", "system:nodes"]
       }
@@ -83,16 +82,16 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 }
 
-resource "aws_eks_cluster" "eks" {
+eks" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
 
   vpc_config {
-    subnet_ids         = var.subnets
+    subnet_ids         = var.private_subnets
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
-  version = "1.25" # Ensure this is a supported version
+  version = var.cluster_version
 
   tags = {
     Name = var.cluster_name
@@ -102,7 +101,7 @@ resource "aws_eks_cluster" "eks" {
 resource "aws_eks_node_group" "eks_nodes" {
   cluster_name   = aws_eks_cluster.eks.name
   node_role_arn  = var.node_role_arn
-  subnet_ids     = var.subnets
+  subnet_ids     = var.private_subnets
   instance_types = [var.instance_type]
 
   scaling_config {
