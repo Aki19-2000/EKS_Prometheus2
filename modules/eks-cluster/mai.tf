@@ -26,7 +26,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
   ingress {
     from_port   = 3001
-   1
+    to_port     = 3001
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -36,7 +36,7 @@ resource "aws_security_group" "eks_cluster_sg" {
   }
 }
 
-resource "aws_eks_cluster" "eks" {
+eks_cluster" "eks" {
   name     = var.cluster_name
   role_arn = var.cluster_role_arn
 
@@ -58,8 +58,7 @@ resource "aws_eks_node_group" "eks_nodes" {
   subnet_ids     = var.subnets
   instance_types = [var.instance_type]
 
-  scaling_config {
-    desired_size = var.desired_capacity
+ _size = var.desired_capacity
     min_size     = var.min_capacity
     max_size     = var.max_capacity
   }
