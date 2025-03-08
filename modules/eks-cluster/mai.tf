@@ -26,7 +26,7 @@ resource "aws_security_group" "eks_cluster_sg" {
 
   ingress {
     from_port   = 3001
-    to_port     = 3001
+   1
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -63,6 +63,9 @@ resource "aws_eks_node_group" "eks_nodes" {
     min_size     = var.min_capacity
     max_size     = var.max_capacity
   }
+
+  ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
+  release_version = "ami-0d36889d628f44a78" # Replace with the actual AMI ID for Kubernetes version 1.25
 
   tags = {
     Name = "${var.cluster_name}-worker-nodes"
