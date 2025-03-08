@@ -34,11 +34,6 @@ variable "cluster_version" {
   description = "The version of the EKS cluster"
 }
 
-variable "subnets" {
-  description = "The subnets for the EKS cluster"
-  type        = list(string)
-}
-
 variable "vpc_id" {
   description = "The VPC ID for the EKS cluster"
 }
