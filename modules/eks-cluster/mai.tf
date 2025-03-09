@@ -221,6 +221,7 @@ resource "kubernetes_service" "PatientService" {
 
   depends_on = [kubernetes_deployment.PatientDeployment]
 }
+
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = "monitoring"
@@ -259,4 +260,50 @@ resource "helm_release" "prometheus" {
   }
 
   depends_on = [kubernetes_namespace.monitoring]
+}
+
+resource "kubernetes_service" "grafana" {
+  metadata {
+    name      = "grafana"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "grafana"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80
+      target_port = 3000
+    }
+
+    type = "LoadBalancer"
+  }
+
+  depends_on = [helm_release.prometheus]
+}
+
+resource "kubernetes_service" "prometheus" {
+  metadata {
+    name      = "prometheus"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+
+  spec {
+    selector = {
+      app = "prometheus"
+    }
+
+    port {
+      protocol    = "TCP"
+      port        = 80
+      target_port = 9090
+    }
+
+    type = "LoadBalancer"
+  }
+
+  depends_on = [helm_release.prometheus]
 }
