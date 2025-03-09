@@ -241,7 +241,7 @@ resource "helm_release" "prometheus" {
 
   timeout = 1200  # Increase timeout to 20 minutes
 
-  # ✅ Enable JSON logging for better observability
+  #  Enable JSON logging for better observability
   set {
     name  = "prometheus.prometheusSpec.logLevel"
     value = "info"
@@ -252,7 +252,7 @@ resource "helm_release" "prometheus" {
     value = "json"
   }
 
-  # ✅ Configure Prometheus to scrape logs from Kubernetes Pods
+  #  Configure Prometheus to scrape logs from Kubernetes Pods
   set {
     name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
     value = "false"
@@ -271,13 +271,13 @@ resource "helm_release" "grafana" {
   namespace  = "monitoring"
   create_namespace = true
 
-  # ✅ Set LoadBalancer for External Access
+  # Set LoadBalancer for External Access
   set {
     name  = "service.type"
     value = "LoadBalancer"
   }
 
-  # ✅ Default Admin Credentials
+  # Default Admin Credentials
   set {
     name  = "adminUser"
     value = "admin"
@@ -288,7 +288,7 @@ resource "helm_release" "grafana" {
     value = "admin123"
   }
 
-  # ✅ Enable Dashboard Discovery
+  # Enable Dashboard Discovery
   set {
     name  = "grafana.sidecar.dashboards.enabled"
     value = "true"
@@ -299,7 +299,7 @@ resource "helm_release" "grafana" {
     value = "ALL"
   }
 
-  # ✅ Auto-connect Prometheus as a Data Source in Grafana
+  # Auto-connect Prometheus as a Data Source in Grafana
   set {
     name  = "grafana.datasources.datasources.yaml.apiVersion"
     value = "1"
@@ -330,7 +330,7 @@ resource "helm_release" "grafana" {
     value = "true"
   }
 
-  # ✅ Automatically Import Predefined Dashboards
+  # Automatically Import Predefined Dashboards
   set {
     name  = "grafana.dashboardsProvider.enabled"
     value = "true"
@@ -361,7 +361,7 @@ resource "helm_release" "grafana" {
     value = "true"
   }
 
-  # ✅ Ensure Dashboards are Auto-Synced
+  # Ensure Dashboards are Auto-Synced
   set {
     name  = "grafana.sidecar.datasources.enabled"
     value = "true"
