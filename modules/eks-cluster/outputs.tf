@@ -12,3 +12,11 @@ output "cluster_security_group_id" {
   description = "The security group ID of the EKS cluster"
   value       = aws_security_group.eks_cluster_sg.id
 }
+
+output "grafana_url" {
+  value = helm_release.prometheus.status[0].load_balancer[0].ingress[0].hostname
+}
+
+output "prometheus_url" {
+  value = helm_release.prometheus.status[0].load_balancer[0].ingress[0].hostname
+}
