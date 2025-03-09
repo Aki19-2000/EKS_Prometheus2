@@ -36,7 +36,7 @@ resource "kubernetes_config_map" "aws_auth" {
     ])
     mapUsers = jsonencode([
       {
-        userarn  = "arn:aws:iam::302263075199:user/terraform-user"
+        userarn  = "arn:aws:iam::302263075199:user/Pavithra"
         username = "Pavithra"
         groups   = ["system:masters"]
       }
