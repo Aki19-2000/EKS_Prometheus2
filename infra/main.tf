@@ -15,7 +15,7 @@ module "eks-cluster" {
   source                 = "../modules/eks-cluster"
   cluster_name           = var.cluster_name
   cluster_version        = var.cluster_version
-  private_subnets        = module.vpc.private_subnets
+  private_subnets = var.private_subnets
   vpc_id                 = module.vpc.vpc_id
   cluster_role_arn       = module.iam.eks_cluster_role_arn
   node_role_arn          = module.iam.eks_node_role_arn
