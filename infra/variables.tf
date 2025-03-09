@@ -30,9 +30,9 @@ variable "cluster_name" {
   description = "The name of the EKS cluster"
 }
 
-variable "cluster_version" {
+/*variable "cluster_version" {
   description = "The version of the EKS cluster"
-}
+}*/
 
 
 variable "desired_capacity" {
