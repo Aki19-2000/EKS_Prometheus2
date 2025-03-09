@@ -6,10 +6,10 @@ variable "cluster_version" {
   description = "The version of the EKS cluster"
 }
 
-variable "subnets" {
+/*variable "subnets" {
   description = "The subnets for the EKS cluster"
   type        = list(string)
-}
+}*/
 
 variable "private_subnets" {
   description = "The private subnets for the EKS cluster"
