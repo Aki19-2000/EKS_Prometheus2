@@ -14,7 +14,7 @@ module "iam" {
 module "eks-cluster" {
   source                 = "../modules/eks-cluster"
   cluster_name           = var.cluster_name
-  cluster_version        = var.cluster_version
+  #cluster_version        = var.cluster_version
   private_subnets        = module.vpc.private_subnets
   vpc_id                 = module.vpc.vpc_id
   cluster_role_arn       = module.iam.eks_cluster_role_arn
