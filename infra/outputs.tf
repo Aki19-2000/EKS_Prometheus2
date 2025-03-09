@@ -23,7 +23,7 @@ output "eks_node_role_arn" {
   value       = module.iam.eks_node_role_arn
 }
 
-output "patient_service_repository_url" {
+/*output "patient_service_repository_url" {
   description = "The URL of the patient service repository"
   value       = module.ecr.patient_service_repository_url
 }
@@ -31,4 +31,4 @@ output "patient_service_repository_url" {
 output "appointment_service_repository_url" {
   description = "The URL of the appointment service repository"
   value       = module.ecr.appointment_service_repository_url
-}
+}*/
