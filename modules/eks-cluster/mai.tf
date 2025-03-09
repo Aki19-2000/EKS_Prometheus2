@@ -91,7 +91,7 @@ resource "aws_eks_cluster" "eks" {
     security_group_ids = [aws_security_group.eks_cluster_sg.id]
   }
 
-  version = var.cluster_version
+  #version = var.cluster_version
 
   tags = {
     Name = var.cluster_name
@@ -110,8 +110,8 @@ resource "aws_eks_node_group" "eks_nodes" {
     max_size     = var.max_capacity
   }
 
-  ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
-  release_version = "ami-0a0b0c0d0e0f0g0h0" # Replace with the actual AMI ID for Kubernetes version 1.25
+  #ami_type        = "AL2_x86_64" # Use the appropriate AMI type for your instance type
+  #release_version = "ami-0a0b0c0d0e0f0g0h0" # Replace with the actual AMI ID for Kubernetes version 1.25
 
   tags = {
     Name = "${var.cluster_name}-worker-nodes"
