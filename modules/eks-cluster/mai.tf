@@ -366,4 +366,6 @@ resource "helm_release" "grafana" {
     name  = "grafana.sidecar.datasources.enabled"
     value = "true"
   }
+
+  timeout = 1800
 }
