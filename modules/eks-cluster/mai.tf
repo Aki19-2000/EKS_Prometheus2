@@ -229,29 +229,15 @@ resource "kubernetes_namespace" "monitoring" {
 }
 
 resource "helm_release" "prometheus" {
-  name       = "prometheus"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = kubernetes_namespace.monitoring.metadata[0].name
+  name             = "prometheus"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  namespace        = kubernetes_namespace.monitoring.metadata[0].name
+  create_namespace = true
 
   set {
-    name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
-    value = "false"
-  }
-
-  set {
-    name  = "grafana.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "grafana.adminPassword"
-    value = var.grafana_admin_password
-  }
-
-  set {
-    name  = "grafana.service.type"
-    value = "LoadBalancer"
+    name  = "server.global.scrape_interval"
+    value = "15s"
   }
 
   set {
@@ -259,51 +245,123 @@ resource "helm_release" "prometheus" {
     value = "LoadBalancer"
   }
 
-  depends_on = [kubernetes_namespace.monitoring]
+  timeout = 1200  # Increase timeout to 20 minutes
+
+  set {
+    name  = "prometheus.prometheusSpec.logLevel"
+    value = "info"
+  }
+
+  set {
+    name  = "prometheus.prometheusSpec.logFormat"
+    value = "json"
+  }
+
+  set {
+    name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
+    value = "false"
+  }
+
+  set {
+    name  = "prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues"
+    value = "false"
+  }
 }
 
-resource "kubernetes_service" "grafana" {
-  metadata {
-    name      = "grafana"
-    namespace = kubernetes_namespace.monitoring.metadata[0].name
+resource "helm_release" "grafana" {
+  name             = "grafana"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "grafana"
+  namespace        = kubernetes_namespace.monitoring.metadata[0].name
+  create_namespace = true
+
+  set {
+    name  = "service.type"
+    value = "LoadBalancer"
   }
 
-  spec {
-    selector = {
-      app = "grafana"
-    }
-
-    port {
-      protocol    = "TCP"
-      port        = 80
-      target_port = 3000
-    }
-
-    type = "LoadBalancer"
+  set {
+    name  = "adminUser"
+    value = "admin"
   }
 
-  depends_on = [helm_release.prometheus]
-}
-
-resource "kubernetes_service" "prometheus" {
-  metadata {
-    name      = "prometheus"
-    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  set {
+    name  = "adminPassword"
+    value = var.grafana_admin_password
   }
 
-  spec {
-    selector = {
-      app = "prometheus"
-    }
-
-    port {
-      protocol    = "TCP"
-      port        = 80
-      target_port = 9090
-    }
-
-    type = "LoadBalancer"
+  set {
+    name  = "grafana.sidecar.dashboards.enabled"
+    value = "true"
   }
 
-  depends_on = [helm_release.prometheus]
+  set {
+    name  = "grafana.sidecar.dashboards.searchNamespace"
+    value = "ALL"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.apiVersion"
+    value = "1"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.datasources[0].name"
+    value = "Prometheus"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.datasources[0].type"
+    value = "prometheus"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.datasources[0].url"
+    value = "http://prometheus-kube-prometheus-prometheus.monitoring:9090"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.datasources[0].access"
+    value = "proxy"
+  }
+
+  set {
+    name  = "grafana.datasources.datasources.yaml.datasources[0].isDefault"
+    value = "true"
+  }
+
+  set {
+    name  = "grafana.dashboardsProvider.enabled"
+    value = "true"
+  }
+
+  set {
+    name  = "grafana.dashboards.default.kubernetes.url"
+    value = "https://grafana.com/api/dashboards/315/download"
+  }
+
+  set {
+    name  = "grafana.dashboards.default.kubernetes.type"
+    value = "json"
+  }
+
+  set {
+    name  = "grafana.dashboards.default.node_exporter.url"
+    value = "https://grafana.com/api/dashboards/1860/download"
+  }
+
+  set {
+    name  = "grafana.dashboards.default.node_exporter.type"
+    value = "json"
+  }
+
+  set {
+    name  = "grafana.defaultDashboardsEnabled"
+    value = "true"
+  }
+
+  set {
+    name  = "grafana.sidecar.datasources.enabled"
+    value = "true"
+  }
 }
