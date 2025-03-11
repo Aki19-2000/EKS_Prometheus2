@@ -33,7 +33,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: arn:aws:iam::302263075199:role/OIDC-Terraform
+          role-to-assume: arn:aws:iam::510278866235:role/OIDC2
           aws-region: us-west-2
 
       - name: List Directory Contents
